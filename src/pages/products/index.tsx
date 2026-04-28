@@ -2,103 +2,100 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import { Plus, Search, Pencil, Trash2, Package2, Video } from "lucide-react";
-import { Product, Category } from "@/types";
-import { listProducts, deleteProduct } from "@/services/productService";
-import { listCategories } from "@/services/categoryService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { useMyStore } from "@/contexts/StoreContext";
+import { storage } from "@/lib/storage";
+import type { Product, Category } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
-const statusStyles: Record<Product["status"], string> = {
-  active: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
-  draft: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
-  out_of_stock: "bg-red-100 text-red-700 ring-1 ring-red-200",
+const formatVND = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + " ₫";
+
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "");
+
+const statusStyles = {
+  active: "bg-green-500/10 text-green-600",
+  draft: "bg-gray-500/10 text-gray-600",
+  out_of_stock: "bg-red-500/10 text-red-600",
 };
 
-const formatVND = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + " ₫";
-const stripHtml = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
 export default function ProductsPage() {
-  const { store } = useMyStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  const refresh = async () => {
-    if (!store) return;
-    const [p, c] = await Promise.all([listProducts(store.id), listCategories(store.id)]);
-    setProducts(p);
-    setCategories(c);
-    setLoading(false);
+  const refresh = () => {
+    setProducts(storage.products.list());
+    setCategories(storage.categories.list());
   };
 
-  useEffect(() => {
-    if (!store) return;
-    refresh().catch((err) => { console.error(err); setLoading(false); });
-  }, [store]);
+  useEffect(() => { refresh(); }, []);
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (categoryFilter !== "all" && p.categoryId !== categoryFilter) return false;
-      return true;
-    });
+    let result = products;
+    if (search.trim()) result = result.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+    if (categoryFilter !== "all") result = result.filter((p) => p.categoryId === categoryFilter);
+    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [products, search, categoryFilter]);
 
-  const handleDelete = async () => {
+  const categoryName = (id: string) => categories.find((c) => c.id === id)?.name ?? "Uncategorized";
+
+  const handleDelete = () => {
     if (!deleteId) return;
     try {
-      await deleteProduct(deleteId);
-      setProducts((prev) => prev.filter((p) => p.id !== deleteId));
+      storage.products.delete(deleteId);
       toast({ title: "Product deleted" });
+      refresh();
     } catch (err) {
       toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Error", variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
-    setDeleteId(null);
   };
-
-  const categoryName = (id: string) => categories.find((c) => c.id === id)?.name ?? "—";
 
   return (
     <>
-      <Head><title>Products · Admin</title></Head>
-      <DashboardLayout title="Products" description={`${products.length} total products`}>
-        <Card className="mb-6 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button asChild>
-              <Link href="/products/new"><Plus className="mr-2 h-4 w-4" /> Add Product</Link>
-            </Button>
+      <Head><title>Products - Admin</title></Head>
+      <DashboardLayout
+        title="Products"
+        description={`${products.length} total products`}
+        action={
+          <Button asChild className="gap-2">
+            <Link href="/products/new"><Plus className="h-4 w-4" /> Add Product</Link>
+          </Button>
+        }
+      >
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="border-border pl-9" />
           </div>
-        </Card>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full border-border sm:w-[200px]">
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        {loading ? (
-          <Card className="p-12 text-center text-muted-foreground">Loading products...</Card>
-        ) : filtered.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Package2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="text-muted-foreground">No products found</p>
+        {filtered.length === 0 ? (
+          <Card className="flex flex-col items-center justify-center border-border py-16">
+            <Package2 className="mb-3 h-12 w-12 text-muted-foreground" />
+            <p className="mb-4 text-muted-foreground">{search || categoryFilter !== "all" ? "No products found" : "No products yet"}</p>
+            <Button asChild><Link href="/products/new"><Plus className="mr-2 h-4 w-4" /> Create Product</Link></Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((p) => (
               <Card key={p.id} className="group flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
                 <Link href={`/products/${p.id}`} className="relative block aspect-square overflow-hidden bg-muted">
@@ -109,7 +106,9 @@ export default function ProductsPage() {
                       <Package2 className="h-10 w-10" />
                     </div>
                   )}
-                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles[p.status]}`}>{p.status.replace("_", " ")}</span>
+                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles[p.status]}`}>
+                    {p.status.replace("_", " ")}
+                  </span>
                   {p.videoUrl && (
                     <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
                       <Video className="h-3 w-3" /> Video
