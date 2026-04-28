@@ -7,6 +7,7 @@ import { Product, Category } from "@/types";
 import { listCategories } from "@/services/categoryService";
 import { createProduct, updateProduct } from "@/services/productService";
 import { uploadProductImage } from "@/services/storageService";
+import { useMyStore } from "@/contexts/StoreContext";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ const getYouTubeEmbed = (url: string): string | null => {
 
 export function ProductFormPage({ product }: Props) {
   const router = useRouter();
+  const { store } = useMyStore();
   const isEdit = !!product;
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState(product?.name ?? "");
@@ -37,7 +39,7 @@ export function ProductFormPage({ product }: Props) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { listCategories().then(setCategories).catch(() => {}); }, []);
+  useEffect(() => { if (store) listCategories(store.id).then(setCategories).catch(() => {}); }, [store]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -72,6 +74,7 @@ export function ProductFormPage({ product }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!store) { toast({ title: "Store not loaded", variant: "destructive" }); return; }
     if (!name.trim()) { toast({ title: "Product name is required", variant: "destructive" }); return; }
     if (!categoryId) { toast({ title: "Please select a category", variant: "destructive" }); return; }
     setSaving(true);
@@ -86,7 +89,7 @@ export function ProductFormPage({ product }: Props) {
         status,
       };
       if (isEdit && product) await updateProduct(product.id, payload);
-      else await createProduct(payload);
+      else await createProduct(store.id, payload);
       toast({ title: isEdit ? "Product updated" : "Product created" });
       router.push("/products");
     } catch (err) {

@@ -9,6 +9,7 @@ import { Product, Post, Order } from "@/types";
 import { listProducts } from "@/services/productService";
 import { listPosts } from "@/services/postService";
 import { listOrders } from "@/services/orderService";
+import { useMyStore } from "@/contexts/StoreContext";
 import { SEO } from "@/components/SEO";
 
 const statusStyles: Record<Order["status"], string> = {
@@ -22,15 +23,17 @@ const statusStyles: Record<Order["status"], string> = {
 const formatVND = (n: number): string => new Intl.NumberFormat("vi-VN").format(n) + " ₫";
 
 export default function Home() {
+  const { store } = useMyStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    listProducts().then(setProducts).catch(() => {});
-    listPosts().then(setPosts).catch(() => {});
-    listOrders().then(setOrders).catch(() => {});
-  }, []);
+    if (!store) return;
+    listProducts(store.id).then(setProducts).catch(() => {});
+    listPosts(store.id).then(setPosts).catch(() => {});
+    listOrders(store.id).then(setOrders).catch(() => {});
+  }, [store]);
 
   const totalRevenue = orders.filter((o) => o.status !== "cancelled").reduce((s, o) => s + o.total, 0);
   const publishedPosts = posts.filter((p) => p.status === "published").length;

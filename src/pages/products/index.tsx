@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useMyStore } from "@/contexts/StoreContext";
 import { toast } from "@/hooks/use-toast";
 
 const statusStyles: Record<Product["status"], string> = {
@@ -23,6 +24,7 @@ const formatVND = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + " â‚
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 export default function ProductsPage() {
+  const { store } = useMyStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
@@ -31,15 +33,17 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
-    const [p, c] = await Promise.all([listProducts(), listCategories()]);
+    if (!store) return;
+    const [p, c] = await Promise.all([listProducts(store.id), listCategories(store.id)]);
     setProducts(p);
     setCategories(c);
     setLoading(false);
   };
 
   useEffect(() => {
+    if (!store) return;
     refresh().catch((err) => { console.error(err); setLoading(false); });
-  }, []);
+  }, [store]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
