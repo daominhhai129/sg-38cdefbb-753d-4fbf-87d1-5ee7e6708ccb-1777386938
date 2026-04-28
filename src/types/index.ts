@@ -1,23 +1,5 @@
-export interface Store {
-  id: string;
-  ownerId: string;
-  name: string;
-  slug: string;
-  tagline: string;
-  description: string;
-  logoUrl: string;
-  email: string;
-  phone: string;
-  address: string;
-  facebook: string;
-  instagram: string;
-  twitter: string;
-  createdAt: string;
-}
-
 export interface Product {
   id: string;
-  storeId: string;
   name: string;
   description: string;
   price: number;
@@ -30,22 +12,17 @@ export interface Product {
 
 export interface Category {
   id: string;
-  storeId: string;
   name: string;
-  slug: string;
-  description: string;
   color: string;
   createdAt: string;
 }
 
 export interface Post {
   id: string;
-  storeId: string;
   title: string;
   content: string;
-  excerpt: string;
-  coverImage: string;
-  status: "draft" | "published" | "archived";
+  slug: string;
+  status: "published" | "draft";
   author: string;
   createdAt: string;
 }
@@ -53,20 +30,29 @@ export interface Post {
 export interface OrderItem {
   productId: string;
   productName: string;
-  price: number;
   quantity: number;
+  price: number;
 }
 
 export interface Order {
   id: string;
-  storeId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  shippingAddress: string;
   items: OrderItem[];
   total: number;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   notes: string;
   createdAt: string;
+}
+
+export interface ShopInfo {
+  name: string;
+  tagline: string;
+  email: string;
+  phone: string;
+  address: string;
+  facebook: string;
+  instagram: string;
+  twitter: string;
 }
