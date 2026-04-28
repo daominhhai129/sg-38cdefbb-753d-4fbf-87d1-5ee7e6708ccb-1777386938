@@ -19,7 +19,6 @@ const empty: Omit<Product, "id" | "createdAt"> = {
   name: "",
   description: "",
   price: 0,
-  stock: 0,
   categoryId: "",
   imageUrl: "",
   status: "active",
@@ -45,7 +44,6 @@ export function ProductForm({ open, onOpenChange, product, categories, onSave }:
       createdAt: product?.createdAt ?? new Date().toISOString(),
       ...form,
       price: Number(form.price) || 0,
-      stock: Number(form.stock) || 0,
     };
     onSave(saved);
     onOpenChange(false);
@@ -71,10 +69,6 @@ export function ProductForm({ open, onOpenChange, product, categories, onSave }:
             <div className="space-y-2">
               <Label htmlFor="price">Price ($)</Label>
               <Input id="price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
-              <Input id="stock" type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })} required />
             </div>
           </div>
           <div className="space-y-2">

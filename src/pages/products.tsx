@@ -113,10 +113,6 @@ export default function ProductsPage() {
                     <p className="text-xs text-muted-foreground">Price</p>
                     <p className="text-lg font-bold tabular-nums">${p.price.toFixed(2)}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Stock</p>
-                    <p className="text-lg font-semibold tabular-nums">{p.stock}</p>
-                  </div>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1" onClick={() => { setEditing(p); setFormOpen(true); }}>
