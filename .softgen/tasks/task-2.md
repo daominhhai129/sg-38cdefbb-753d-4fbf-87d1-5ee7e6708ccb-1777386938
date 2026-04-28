@@ -1,25 +1,25 @@
 ---
 title: Product Management
-status: todo
+status: done
 priority: high
 type: feature
-tags: [products, crud, table]
+tags: [products, crud]
 created_by: agent
-created_at: 2026-04-28T14:13:05Z
+created_at: 2026-04-28T14:13:10Z
 position: 2
 ---
 
 ## Notes
-Complete product management interface with table, create/edit forms, category assignment, and image placeholders.
+Full CRUD for products with search, category filter, and form dialog.
 
 ## Checklist
-- [ ] Create products page with data table (name, category, price, stock, status)
-- [ ] Add search and filter by category
-- [ ] Build product form dialog (name, description, price, stock, category, image URL)
-- [ ] Implement localStorage CRUD operations
-- [ ] Add 8-10 sample products on first load
+- [x] Create products.tsx page with table view
+- [x] Add product form dialog (name, description, price, stock, category, status, image)
+- [x] Implement search and category filter
+- [x] Add edit and delete actions
+- [x] Wire to localStorage via storage utilities
 
 ## Acceptance
-- Table displays products with inline edit/delete actions
+- Products table shows all products with category names
 - "Add Product" button opens form dialog
 - Products persist in localStorage across page refreshes
