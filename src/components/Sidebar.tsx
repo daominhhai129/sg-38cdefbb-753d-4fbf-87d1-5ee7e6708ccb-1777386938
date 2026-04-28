@@ -28,7 +28,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = router.pathname === item.href || (item.href !== "/" && router.pathname.startsWith(item.href));
+          const active = item.href === "/" ? router.pathname === "/" : router.pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}

@@ -69,3 +69,25 @@
     background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
   }
 }
+
+@layer components {
+  .rich-content h1 { @apply mb-2 mt-4 text-2xl font-bold text-foreground; }
+  .rich-content h2 { @apply mb-2 mt-3 text-xl font-bold text-foreground; }
+  .rich-content h3 { @apply mb-1 mt-2 text-lg font-semibold text-foreground; }
+  .rich-content p { @apply mb-2 leading-relaxed text-foreground; }
+  .rich-content p:last-child { @apply mb-0; }
+  .rich-content ul { @apply mb-2 list-disc space-y-1 pl-6; }
+  .rich-content ol { @apply mb-2 list-decimal space-y-1 pl-6; }
+  .rich-content li { @apply leading-relaxed; }
+  .rich-content blockquote { @apply my-3 border-l-4 border-primary bg-muted/40 py-2 pl-4 italic text-muted-foreground; }
+  .rich-content strong { @apply font-bold; }
+  .rich-content em { @apply italic; }
+  .rich-content s { @apply line-through; }
+  .rich-content a { @apply text-primary underline; }
+  .rich-content code { @apply rounded bg-muted px-1 py-0.5 text-sm; }
+  .ProseMirror:focus { @apply outline-none; }
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
+  }
+}

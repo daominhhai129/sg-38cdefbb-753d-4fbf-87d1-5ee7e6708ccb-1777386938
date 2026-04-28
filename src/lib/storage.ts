@@ -6,7 +6,7 @@ const KEYS = {
   orders: "admin_orders",
   categories: "admin_categories",
   shopInfo: "admin_shop_info",
-  seeded: "admin_seeded_v1",
+  seeded: "admin_seeded_v2",
 } as const;
 
 export function getItem<T>(key: string, fallback: T): T {
@@ -36,16 +36,16 @@ const sampleCategories: Category[] = [
 ];
 
 const sampleProducts: Product[] = [
-  { id: "p1", name: "Wireless Headphones Pro", description: "Premium noise-cancelling over-ear headphones", price: 249.99, categoryId: "c1", imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: "p2", name: "Smart Watch Series 8", description: "Fitness tracking with heart rate monitor", price: 399.0, categoryId: "c1", imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 3).toISOString() },
-  { id: "p3", name: "Cotton Crew Tee", description: "Soft 100% organic cotton t-shirt", price: 29.99, categoryId: "c2", imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 10).toISOString() },
-  { id: "p4", name: "Denim Jacket", description: "Classic vintage wash denim jacket", price: 89.5, categoryId: "c2", imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400", status: "out_of_stock", createdAt: new Date(Date.now() - 86400000 * 15).toISOString() },
-  { id: "p5", name: "Modern Floor Lamp", description: "Minimalist LED floor lamp with dimmer", price: 159.0, categoryId: "c3", imageUrl: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 7).toISOString() },
-  { id: "p6", name: "The Design Handbook", description: "Essential reading for modern designers", price: 34.95, categoryId: "c4", imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
-  { id: "p7", name: "Vitamin C Serum", description: "Brightening serum with hyaluronic acid", price: 48.0, categoryId: "c5", imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: "p8", name: "Yoga Mat Premium", description: "Eco-friendly non-slip yoga mat", price: 68.0, categoryId: "c6", imageUrl: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 1).toISOString() },
-  { id: "p9", name: "Bluetooth Speaker Mini", description: "Portable waterproof speaker", price: 79.99, categoryId: "c1", imageUrl: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400", status: "draft", createdAt: new Date(Date.now() - 86400000 * 4).toISOString() },
-  { id: "p10", name: "Ceramic Plant Pot Set", description: "Set of 3 minimalist ceramic pots", price: 42.0, categoryId: "c3", imageUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400", status: "active", createdAt: new Date(Date.now() - 86400000 * 6).toISOString() },
+  { id: "p1", name: "Wireless Headphones Pro", description: "<p>Premium <strong>noise-cancelling</strong> over-ear headphones with 40-hour battery life.</p><ul><li>Active noise cancellation</li><li>Bluetooth 5.3</li><li>Premium leather cushions</li></ul>", price: 5990000, categoryId: "c1", images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600", "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600"], videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", status: "active", createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
+  { id: "p2", name: "Smart Watch Series 8", description: "<p>Fitness tracking with <em>continuous</em> heart rate monitor and ECG.</p>", price: 9590000, categoryId: "c1", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 3).toISOString() },
+  { id: "p3", name: "Cotton Crew Tee", description: "<p>Soft 100% organic cotton t-shirt. Available in multiple colors.</p>", price: 720000, categoryId: "c2", images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 10).toISOString() },
+  { id: "p4", name: "Denim Jacket", description: "<p>Classic <strong>vintage wash</strong> denim jacket with copper buttons.</p>", price: 2150000, categoryId: "c2", images: ["https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600"], videoUrl: "", status: "out_of_stock", createdAt: new Date(Date.now() - 86400000 * 15).toISOString() },
+  { id: "p5", name: "Modern Floor Lamp", description: "<p>Minimalist LED floor lamp with adjustable dimmer and warm color temperature.</p>", price: 3820000, categoryId: "c3", images: ["https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 7).toISOString() },
+  { id: "p6", name: "The Design Handbook", description: "<p>Essential reading for modern designers. <em>Covers typography, color, and layout.</em></p>", price: 850000, categoryId: "c4", images: ["https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 20).toISOString() },
+  { id: "p7", name: "Vitamin C Serum", description: "<p>Brightening serum with hyaluronic acid and antioxidants.</p>", price: 1150000, categoryId: "c5", images: ["https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
+  { id: "p8", name: "Yoga Mat Premium", description: "<p>Eco-friendly non-slip yoga mat. 6mm thick natural rubber.</p>", price: 1620000, categoryId: "c6", images: ["https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 1).toISOString() },
+  { id: "p9", name: "Bluetooth Speaker Mini", description: "<p>Portable waterproof speaker with 24-hour playtime.</p>", price: 1920000, categoryId: "c1", images: ["https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600"], videoUrl: "", status: "draft", createdAt: new Date(Date.now() - 86400000 * 4).toISOString() },
+  { id: "p10", name: "Ceramic Plant Pot Set", description: "<p>Set of 3 minimalist ceramic pots in matte finish.</p>", price: 1010000, categoryId: "c3", images: ["https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=600"], videoUrl: "", status: "active", createdAt: new Date(Date.now() - 86400000 * 6).toISOString() },
 ];
 
 const samplePosts: Post[] = [

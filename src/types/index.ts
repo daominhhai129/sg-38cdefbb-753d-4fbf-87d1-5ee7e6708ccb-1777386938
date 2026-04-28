@@ -4,7 +4,8 @@ export interface Product {
   description: string;
   price: number;
   categoryId: string;
-  imageUrl: string;
+  images: string[];
+  videoUrl: string;
   status: "active" | "draft" | "out_of_stock";
   createdAt: string;
 }
