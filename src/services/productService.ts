@@ -3,6 +3,7 @@ import { Product } from "@/types";
 
 interface DbProduct {
   id: string;
+  store_id: string;
   name: string;
   description: string;
   price: number;
@@ -15,6 +16,7 @@ interface DbProduct {
 
 const fromDb = (r: DbProduct): Product => ({
   id: r.id,
+  storeId: r.store_id,
   name: r.name,
   description: r.description,
   price: Number(r.price),
@@ -25,8 +27,8 @@ const fromDb = (r: DbProduct): Product => ({
   createdAt: r.created_at,
 });
 
-export async function listProducts(): Promise<Product[]> {
-  const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+export async function listProducts(storeId: string): Promise<Product[]> {
+  const { data, error } = await supabase.from("products").select("*").eq("store_id", storeId).order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((r) => fromDb(r as DbProduct));
 }
@@ -37,8 +39,9 @@ export async function getProduct(id: string): Promise<Product | null> {
   return data ? fromDb(data as DbProduct) : null;
 }
 
-export async function createProduct(p: Omit<Product, "id" | "createdAt">): Promise<Product> {
+export async function createProduct(storeId: string, p: Omit<Product, "id" | "createdAt" | "storeId">): Promise<Product> {
   const { data, error } = await supabase.from("products").insert({
+    store_id: storeId,
     name: p.name,
     description: p.description,
     price: p.price,
@@ -51,7 +54,7 @@ export async function createProduct(p: Omit<Product, "id" | "createdAt">): Promi
   return fromDb(data as DbProduct);
 }
 
-export async function updateProduct(id: string, p: Partial<Omit<Product, "id" | "createdAt">>): Promise<Product> {
+export async function updateProduct(id: string, p: Partial<Omit<Product, "id" | "createdAt" | "storeId">>): Promise<Product> {
   const payload: Record<string, unknown> = {};
   if (p.name !== undefined) payload.name = p.name;
   if (p.description !== undefined) payload.description = p.description;

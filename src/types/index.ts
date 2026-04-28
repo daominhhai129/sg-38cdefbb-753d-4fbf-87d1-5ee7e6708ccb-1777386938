@@ -1,5 +1,23 @@
+export interface Store {
+  id: string;
+  ownerId: string;
+  name: string;
+  slug: string;
+  tagline: string;
+  description: string;
+  logoUrl: string;
+  email: string;
+  phone: string;
+  address: string;
+  facebook: string;
+  instagram: string;
+  twitter: string;
+  createdAt: string;
+}
+
 export interface Product {
   id: string;
+  storeId: string;
   name: string;
   description: string;
   price: number;
@@ -12,6 +30,7 @@ export interface Product {
 
 export interface Category {
   id: string;
+  storeId: string;
   name: string;
   slug: string;
   description: string;
@@ -21,6 +40,7 @@ export interface Category {
 
 export interface Post {
   id: string;
+  storeId: string;
   title: string;
   content: string;
   excerpt: string;
@@ -39,6 +59,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  storeId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -48,18 +69,4 @@ export interface Order {
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   notes: string;
   createdAt: string;
-}
-
-export interface ShopInfo {
-  id: number;
-  name: string;
-  tagline: string;
-  description: string;
-  logoUrl: string;
-  email: string;
-  phone: string;
-  address: string;
-  facebook: string;
-  instagram: string;
-  twitter: string;
 }

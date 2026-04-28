@@ -3,6 +3,7 @@ import { Post } from "@/types";
 
 interface DbPost {
   id: string;
+  store_id: string;
   title: string;
   content: string;
   excerpt: string;
@@ -14,6 +15,7 @@ interface DbPost {
 
 const fromDb = (r: DbPost): Post => ({
   id: r.id,
+  storeId: r.store_id,
   title: r.title,
   content: r.content,
   excerpt: r.excerpt,
@@ -23,14 +25,15 @@ const fromDb = (r: DbPost): Post => ({
   createdAt: r.created_at,
 });
 
-export async function listPosts(): Promise<Post[]> {
-  const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
+export async function listPosts(storeId: string): Promise<Post[]> {
+  const { data, error } = await supabase.from("posts").select("*").eq("store_id", storeId).order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((r) => fromDb(r as DbPost));
 }
 
-export async function createPost(p: Omit<Post, "id" | "createdAt">): Promise<Post> {
+export async function createPost(storeId: string, p: Omit<Post, "id" | "createdAt" | "storeId">): Promise<Post> {
   const { data, error } = await supabase.from("posts").insert({
+    store_id: storeId,
     title: p.title, content: p.content, excerpt: p.excerpt,
     cover_image: p.coverImage, status: p.status, author: p.author,
   }).select().single();
@@ -38,7 +41,7 @@ export async function createPost(p: Omit<Post, "id" | "createdAt">): Promise<Pos
   return fromDb(data as DbPost);
 }
 
-export async function updatePost(id: string, p: Partial<Omit<Post, "id" | "createdAt">>): Promise<Post> {
+export async function updatePost(id: string, p: Partial<Omit<Post, "id" | "createdAt" | "storeId">>): Promise<Post> {
   const payload: Record<string, unknown> = {};
   if (p.title !== undefined) payload.title = p.title;
   if (p.content !== undefined) payload.content = p.content;

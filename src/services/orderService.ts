@@ -3,6 +3,7 @@ import { Order, OrderItem } from "@/types";
 
 interface DbOrder {
   id: string;
+  store_id: string;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
@@ -16,6 +17,7 @@ interface DbOrder {
 
 const fromDb = (r: DbOrder): Order => ({
   id: r.id,
+  storeId: r.store_id,
   customerName: r.customer_name,
   customerEmail: r.customer_email,
   customerPhone: r.customer_phone,
@@ -27,14 +29,15 @@ const fromDb = (r: DbOrder): Order => ({
   createdAt: r.created_at,
 });
 
-export async function listOrders(): Promise<Order[]> {
-  const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+export async function listOrders(storeId: string): Promise<Order[]> {
+  const { data, error } = await supabase.from("orders").select("*").eq("store_id", storeId).order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((r) => fromDb(r as unknown as DbOrder));
 }
 
-export async function createOrder(o: Omit<Order, "id" | "createdAt" | "status"> & { status?: Order["status"] }): Promise<Order> {
+export async function createOrder(storeId: string, o: Omit<Order, "id" | "createdAt" | "status" | "storeId"> & { status?: Order["status"] }): Promise<Order> {
   const { data, error } = await supabase.from("orders").insert({
+    store_id: storeId,
     customer_name: o.customerName,
     customer_email: o.customerEmail,
     customer_phone: o.customerPhone,
