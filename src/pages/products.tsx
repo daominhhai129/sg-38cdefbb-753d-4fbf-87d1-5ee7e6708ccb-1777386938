@@ -15,9 +15,9 @@ import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 
 const statusStyles: Record<Product["status"], string> = {
-  active: "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30",
-  draft: "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30",
-  out_of_stock: "bg-destructive/15 text-destructive ring-1 ring-destructive/30",
+  active: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+  draft: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+  out_of_stock: "bg-red-100 text-red-700 ring-1 ring-red-200",
 };
 
 export default function ProductsPage() {

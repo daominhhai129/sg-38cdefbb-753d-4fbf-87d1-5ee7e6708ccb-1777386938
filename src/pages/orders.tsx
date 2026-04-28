@@ -14,11 +14,11 @@ import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 
 const statusStyles: Record<Order["status"], string> = {
-  pending: "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30",
-  processing: "bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30",
-  shipped: "bg-primary/15 text-primary ring-1 ring-primary/30",
-  delivered: "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30",
-  cancelled: "bg-destructive/15 text-destructive ring-1 ring-destructive/30",
+  pending: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+  processing: "bg-sky-100 text-sky-700 ring-1 ring-sky-200",
+  shipped: "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200",
+  delivered: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+  cancelled: "bg-red-100 text-red-700 ring-1 ring-red-200",
 };
 
 export default function OrdersPage() {

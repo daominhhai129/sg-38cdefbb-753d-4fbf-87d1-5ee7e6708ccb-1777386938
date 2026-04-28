@@ -14,9 +14,9 @@ import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 
 const statusStyles: Record<Post["status"], string> = {
-  published: "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30",
-  draft: "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30",
-  archived: "bg-muted-foreground/15 text-muted-foreground ring-1 ring-muted-foreground/30",
+  published: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+  draft: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
+  archived: "bg-slate-100 text-slate-600 ring-1 ring-slate-200",
 };
 
 export default function PostsPage() {
