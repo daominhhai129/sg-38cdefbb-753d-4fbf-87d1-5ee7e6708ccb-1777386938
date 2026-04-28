@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -23,6 +23,7 @@ export type Database = {
           id: string
           name: string
           slug: string
+          store_id: string
         }
         Insert: {
           color?: string
@@ -31,6 +32,7 @@ export type Database = {
           id?: string
           name: string
           slug: string
+          store_id: string
         }
         Update: {
           color?: string
@@ -39,8 +41,17 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
+          store_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -53,6 +64,7 @@ export type Database = {
           notes: string
           shipping_address: string
           status: string
+          store_id: string
           total: number
         }
         Insert: {
@@ -65,6 +77,7 @@ export type Database = {
           notes?: string
           shipping_address?: string
           status?: string
+          store_id: string
           total?: number
         }
         Update: {
@@ -77,9 +90,18 @@ export type Database = {
           notes?: string
           shipping_address?: string
           status?: string
+          store_id?: string
           total?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
@@ -90,6 +112,7 @@ export type Database = {
           excerpt: string
           id: string
           status: string
+          store_id: string
           title: string
         }
         Insert: {
@@ -100,6 +123,7 @@ export type Database = {
           excerpt?: string
           id?: string
           status?: string
+          store_id: string
           title: string
         }
         Update: {
@@ -110,9 +134,18 @@ export type Database = {
           excerpt?: string
           id?: string
           status?: string
+          store_id?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -124,6 +157,7 @@ export type Database = {
           name: string
           price: number
           status: string
+          store_id: string
           video_url: string
         }
         Insert: {
@@ -135,6 +169,7 @@ export type Database = {
           name: string
           price?: number
           status?: string
+          store_id: string
           video_url?: string
         }
         Update: {
@@ -146,6 +181,7 @@ export type Database = {
           name?: string
           price?: number
           status?: string
+          store_id?: string
           video_url?: string
         }
         Relationships: [
@@ -154,6 +190,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -185,43 +228,52 @@ export type Database = {
         }
         Relationships: []
       }
-      shop_info: {
+      stores: {
         Row: {
           address: string
+          created_at: string
           description: string
           email: string
           facebook: string
-          id: number
+          id: string
           instagram: string
           logo_url: string
           name: string
+          owner_id: string
           phone: string
+          slug: string
           tagline: string
           twitter: string
         }
         Insert: {
           address?: string
+          created_at?: string
           description?: string
           email?: string
           facebook?: string
-          id?: number
+          id?: string
           instagram?: string
           logo_url?: string
           name?: string
+          owner_id: string
           phone?: string
+          slug: string
           tagline?: string
           twitter?: string
         }
         Update: {
           address?: string
+          created_at?: string
           description?: string
           email?: string
           facebook?: string
-          id?: number
+          id?: string
           instagram?: string
           logo_url?: string
           name?: string
+          owner_id?: string
           phone?: string
+          slug?: string
           tagline?: string
           twitter?: string
         }
@@ -232,7 +284,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_store_owner: { Args: { p_store_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

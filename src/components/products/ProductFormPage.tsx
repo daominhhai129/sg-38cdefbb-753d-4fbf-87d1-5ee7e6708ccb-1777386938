@@ -6,7 +6,7 @@ import { ArrowLeft, Save, Upload, X, Video, Image as ImageIcon, Loader2 } from "
 import { Product, Category } from "@/types";
 import { listCategories } from "@/services/categoryService";
 import { createProduct, updateProduct } from "@/services/productService";
-import { uploadImage } from "@/services/storageService";
+import { uploadProductImage } from "@/services/storageService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function ProductFormPage({ product }: Props) {
     }
     setUploading(true);
     try {
-      const urls = await Promise.all(files.filter((f) => f.type.startsWith("image/")).map((f) => uploadImage(f)));
+      const urls = await Promise.all(files.filter((f) => f.type.startsWith("image/")).map((f) => uploadProductImage(f)));
       setImages((prev) => [...prev, ...urls]);
     } catch (err) {
       toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Error", variant: "destructive" });

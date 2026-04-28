@@ -60,7 +60,7 @@ export async function updateProduct(id: string, p: Partial<Omit<Product, "id" | 
   if (p.images !== undefined) payload.images = p.images;
   if (p.videoUrl !== undefined) payload.video_url = p.videoUrl;
   if (p.status !== undefined) payload.status = p.status;
-  const { data, error } = await supabase.from("products").update(payload).eq("id", id).select().single();
+  const { data, error } = await supabase.from("products").update(payload as never).eq("id", id).select().single();
   if (error) throw error;
   return fromDb(data as DbProduct);
 }

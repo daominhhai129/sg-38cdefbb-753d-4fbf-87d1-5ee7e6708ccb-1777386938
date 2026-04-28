@@ -46,7 +46,7 @@ export async function updatePost(id: string, p: Partial<Omit<Post, "id" | "creat
   if (p.coverImage !== undefined) payload.cover_image = p.coverImage;
   if (p.status !== undefined) payload.status = p.status;
   if (p.author !== undefined) payload.author = p.author;
-  const { data, error } = await supabase.from("posts").update(payload).eq("id", id).select().single();
+  const { data, error } = await supabase.from("posts").update(payload as never).eq("id", id).select().single();
   if (error) throw error;
   return fromDb(data as DbPost);
 }
