@@ -3,7 +3,6 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  stock: number;
   categoryId: string;
   imageUrl: string;
   status: "active" | "draft" | "out_of_stock";
