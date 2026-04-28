@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import { ArrowLeft, Save, Upload, X, Video, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Video, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Product, Category } from "@/types";
-import { getCategories, getProducts, setProducts } from "@/lib/storage";
+import { listCategories } from "@/services/categoryService";
+import { createProduct, updateProduct } from "@/services/productService";
+import { uploadImage } from "@/services/storageService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
@@ -21,12 +23,10 @@ const getYouTubeEmbed = (url: string): string | null => {
   return m ? `https://www.youtube.com/embed/${m[1]}` : null;
 };
 
-const isTikTok = (url: string) => /tiktok\.com/i.test(url);
-
 export function ProductFormPage({ product }: Props) {
   const router = useRouter();
   const isEdit = !!product;
-  const [categories, setCategoriesState] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState<number>(product?.price ?? 0);
@@ -34,27 +34,28 @@ export function ProductFormPage({ product }: Props) {
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [videoUrl, setVideoUrl] = useState(product?.videoUrl ?? "");
   const [status, setStatus] = useState<Product["status"]>(product?.status ?? "active");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => { setCategoriesState(getCategories()); }, []);
+  useEffect(() => { listCategories().then(setCategories).catch(() => {}); }, []);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    const remaining = 8 - images.length;
-    if (files.length > remaining) {
-      toast({ title: `Maximum 8 images. ${remaining} slots remaining.`, variant: "destructive" });
+    if (images.length + files.length > 8) {
+      toast({ title: "Maximum 8 images", variant: "destructive" });
       return;
     }
-    files.forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const result = ev.target?.result;
-        if (typeof result === "string") setImages((prev) => [...prev, result]);
-      };
-      reader.readAsDataURL(file);
-    });
-    e.target.value = "";
+    setUploading(true);
+    try {
+      const urls = await Promise.all(files.filter((f) => f.type.startsWith("image/")).map((f) => uploadImage(f)));
+      setImages((prev) => [...prev, ...urls]);
+    } catch (err) {
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Error", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const removeImage = (idx: number) => setImages((prev) => prev.filter((_, i) => i !== idx));
@@ -69,27 +70,30 @@ export function ProductFormPage({ product }: Props) {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { toast({ title: "Product name is required", variant: "destructive" }); return; }
     if (!categoryId) { toast({ title: "Please select a category", variant: "destructive" }); return; }
-
-    const all = getProducts();
-    const saved: Product = {
-      id: product?.id ?? `p-${Date.now()}`,
-      createdAt: product?.createdAt ?? new Date().toISOString(),
-      name: name.trim(),
-      description,
-      price: Number(price) || 0,
-      categoryId,
-      images,
-      videoUrl: videoUrl.trim(),
-      status,
-    };
-    const next = isEdit ? all.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...all];
-    setProducts(next);
-    toast({ title: isEdit ? "Product updated" : "Product created" });
-    router.push("/products");
+    setSaving(true);
+    try {
+      const payload = {
+        name: name.trim(),
+        description,
+        price: Number(price) || 0,
+        categoryId,
+        images,
+        videoUrl: videoUrl.trim(),
+        status,
+      };
+      if (isEdit && product) await updateProduct(product.id, payload);
+      else await createProduct(payload);
+      toast({ title: isEdit ? "Product updated" : "Product created" });
+      router.push("/products");
+    } catch (err) {
+      toast({ title: "Save failed", description: err instanceof Error ? err.message : "Error", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const youtubeEmbed = videoUrl ? getYouTubeEmbed(videoUrl) : null;
@@ -100,7 +104,7 @@ export function ProductFormPage({ product }: Props) {
       <Head><title>{isEdit ? "Edit" : "New"} Product · Admin</title></Head>
       <DashboardLayout title={isEdit ? "Edit Product" : "New Product"} description={isEdit ? `Editing ${product?.name}` : "Create a new product listing"}>
         <div className="mb-6">
-          <Link href="/products" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link href="/products" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Back to Products
           </Link>
         </div>
@@ -128,48 +132,34 @@ export function ProductFormPage({ product }: Props) {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {images.map((img, idx) => (
                   <div key={idx} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img} alt="" className="h-full w-full object-cover" />
                     <div className="absolute inset-0 flex items-end justify-end gap-1 bg-gradient-to-t from-black/60 via-transparent to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                      {idx !== 0 && (
-                        <button type="button" onClick={() => setMainImage(idx)} className="rounded bg-white/90 px-2 py-1 text-[10px] font-medium text-foreground shadow hover:bg-white">Set main</button>
-                      )}
-                      <button type="button" onClick={() => removeImage(idx)} className="rounded bg-red-500 p-1 text-white shadow hover:bg-red-600">
-                        <X className="h-3 w-3" />
-                      </button>
+                      {idx !== 0 && <button type="button" onClick={() => setMainImage(idx)} className="rounded bg-white/90 px-2 py-1 text-[10px] font-medium text-foreground shadow hover:bg-white">Set main</button>}
+                      <button type="button" onClick={() => removeImage(idx)} className="rounded bg-red-500 p-1 text-white shadow hover:bg-red-600"><X className="h-3 w-3" /></button>
                     </div>
                     {idx === 0 && <span className="absolute left-2 top-2 rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">Main</span>}
                   </div>
                 ))}
                 {images.length < 8 && (
                   <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary">
-                    <Upload className="mb-1 h-5 w-5" />
-                    <span className="text-xs font-medium">Upload</span>
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                    {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="mb-1 h-5 w-5" />}
+                    <span className="text-xs font-medium">{uploading ? "Uploading..." : "Upload"}</span>
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
                   </label>
                 )}
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">First image is used as the product thumbnail. Hover an image to set as main or remove.</p>
+              <p className="mt-3 text-xs text-muted-foreground">First image is the main thumbnail. Hover to set main or remove. Images are stored on Supabase.</p>
             </Card>
 
             <Card className="p-6">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Video className="h-5 w-5" /> Product Video</h2>
               <div className="space-y-3">
                 <Input placeholder="https://youtube.com/watch?v=... or https://tiktok.com/@user/video/..." value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
-                <p className="text-xs text-muted-foreground">Paste a YouTube or TikTok URL. YouTube videos will preview below.</p>
+                <p className="text-xs text-muted-foreground">YouTube and TikTok URLs supported.</p>
                 {youtubeEmbed && (
                   <div className="aspect-video overflow-hidden rounded-lg border border-border">
                     <iframe src={youtubeEmbed} className="h-full w-full" allowFullScreen title="Video preview" />
                   </div>
-                )}
-                {videoUrl && !youtubeEmbed && isTikTok(videoUrl) && (
-                  <div className="rounded-lg border border-border bg-muted/40 p-4">
-                    <p className="mb-1 text-sm font-medium">TikTok video attached</p>
-                    <a href={videoUrl} target="_blank" rel="noreferrer" className="break-all text-xs text-primary hover:underline">{videoUrl}</a>
-                  </div>
-                )}
-                {videoUrl && !youtubeEmbed && !isTikTok(videoUrl) && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">URL doesn&apos;t appear to be a YouTube or TikTok link. Saved as-is.</div>
                 )}
               </div>
             </Card>
@@ -215,7 +205,10 @@ export function ProductFormPage({ product }: Props) {
             </Card>
 
             <div className="flex flex-col gap-2">
-              <Button type="submit" size="lg" className="w-full"><Save className="mr-2 h-4 w-4" /> {isEdit ? "Update Product" : "Create Product"}</Button>
+              <Button type="submit" size="lg" className="w-full" disabled={saving}>
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {saving ? "Saving..." : isEdit ? "Update Product" : "Create Product"}
+              </Button>
               <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/products")}>Cancel</Button>
             </div>
           </div>

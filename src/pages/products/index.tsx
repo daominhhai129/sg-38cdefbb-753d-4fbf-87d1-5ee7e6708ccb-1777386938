@@ -3,7 +3,8 @@ import Link from "next/link";
 import Head from "next/head";
 import { Plus, Search, Pencil, Trash2, Package2, Video } from "lucide-react";
 import { Product, Category } from "@/types";
-import { getProducts, setProducts, getCategories } from "@/lib/storage";
+import { listProducts, deleteProduct } from "@/services/productService";
+import { listCategories } from "@/services/categoryService";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,15 +23,22 @@ const formatVND = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + " â‚
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 export default function ProductsPage() {
-  const [products, setProductsState] = useState<Product[]>([]);
-  const [categories, setCategoriesState] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = async () => {
+    const [p, c] = await Promise.all([listProducts(), listCategories()]);
+    setProducts(p);
+    setCategories(c);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    setProductsState(getProducts());
-    setCategoriesState(getCategories());
+    refresh().catch((err) => { console.error(err); setLoading(false); });
   }, []);
 
   const filtered = useMemo(() => {
@@ -41,12 +49,15 @@ export default function ProductsPage() {
     });
   }, [products, search, categoryFilter]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    const next = products.filter((p) => p.id !== deleteId);
-    setProducts(next);
-    setProductsState(next);
-    toast({ title: "Product deleted" });
+    try {
+      await deleteProduct(deleteId);
+      setProducts((prev) => prev.filter((p) => p.id !== deleteId));
+      toast({ title: "Product deleted" });
+    } catch (err) {
+      toast({ title: "Delete failed", description: err instanceof Error ? err.message : "Error", variant: "destructive" });
+    }
     setDeleteId(null);
   };
 
@@ -75,7 +86,9 @@ export default function ProductsPage() {
           </div>
         </Card>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <Card className="p-12 text-center text-muted-foreground">Loading products...</Card>
+        ) : filtered.length === 0 ? (
           <Card className="p-12 text-center">
             <Package2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <p className="text-muted-foreground">No products found</p>
@@ -92,9 +105,7 @@ export default function ProductsPage() {
                       <Package2 className="h-10 w-10" />
                     </div>
                   )}
-                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles[p.status]}`}>
-                    {p.status.replace("_", " ")}
-                  </span>
+                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles[p.status]}`}>{p.status.replace("_", " ")}</span>
                   {p.videoUrl && (
                     <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
                       <Video className="h-3 w-3" /> Video

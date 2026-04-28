@@ -1,9 +1,11 @@
-import { ReactNode, useState } from "react";
-import { Menu, Bell, Search } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { Menu, Bell, Search, LogOut } from "lucide-react";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardLayoutProps {
   title: string;
@@ -14,6 +16,31 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ title, description, action, children }: DashboardLayoutProps) {
   const [open, setOpen] = useState(false);
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      if (!data.session) router.replace("/login");
+      else setAuthed(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) router.replace("/login");
+    });
+    return () => { active = false; sub.subscription.unsubscribe(); };
+  }, [router]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  };
+
+  if (authed !== true) {
+    return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-sm text-muted-foreground">Loading...</p></div>;
+  }
+
   return (
     <div className="flex h-screen w-full bg-background text-foreground">
       <div className="hidden md:block">
@@ -39,6 +66,9 @@ export function DashboardLayout({ title, description, action, children }: Dashbo
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
+              <LogOut className="h-5 w-5" />
             </Button>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground">
               SC

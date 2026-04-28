@@ -4,7 +4,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { ProductFormPage } from "@/components/products/ProductFormPage";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { getProducts } from "@/lib/storage";
+import { getProduct } from "@/services/productService";
 import { Product } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,8 @@ export default function EditProductPage() {
   const [product, setProduct] = useState<Product | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!router.isReady) return;
-    if (typeof id !== "string") return;
-    const found = getProducts().find((p) => p.id === id);
-    setProduct(found ?? null);
+    if (!router.isReady || typeof id !== "string") return;
+    getProduct(id).then((p) => setProduct(p ?? null)).catch(() => setProduct(null));
   }, [id, router.isReady]);
 
   if (product === undefined) {
