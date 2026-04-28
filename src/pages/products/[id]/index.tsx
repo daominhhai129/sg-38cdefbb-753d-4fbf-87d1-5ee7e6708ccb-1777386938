@@ -38,7 +38,7 @@ export default function ProductDetailPage() {
         const found = await getProduct(id);
         setProduct(found);
         if (found) {
-          const cats = await listCategories();
+          const cats = await listCategories(found.storeId);
           setCategory(cats.find((c) => c.id === found.categoryId) ?? null);
         }
       } finally {

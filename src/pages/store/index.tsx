@@ -1,53 +1,63 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Head from "next/head";
-import { Product, Category } from "@/types";
-import { listProducts } from "@/services/productService";
-import { listCategories } from "@/services/categoryService";
-import { StoreLayout } from "@/components/store/StoreLayout";
+import { ShoppingBag, ArrowRight } from "lucide-react";
+import { Store } from "@/types";
+import { listAllStores } from "@/services/storeService";
 import { Card } from "@/components/ui/card";
 
-const formatVND = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + " \u20AB";
-
-export default function StorePage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+export default function MarketplacePage() {
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    listProducts().then((all) => setProducts(all.filter((p) => p.status === "active"))).catch(() => {});
-    listCategories().then(setCategories).catch(() => {});
+    listAllStores().then((s) => { setStores(s); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   return (
     <>
-      <Head><title>Store</title></Head>
-      <StoreLayout>
+      <Head><title>Marketplace</title></Head>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border bg-background/95 backdrop-blur">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-vibrant text-white"><ShoppingBag className="h-5 w-5" /></div>
+              <p className="text-lg font-bold">Marketplace</p>
+            </div>
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">Sell on this platform &rarr;</Link>
+          </div>
+        </header>
         <section className="bg-gradient-vibrant py-16 text-center text-white">
-          <h1 className="text-4xl font-bold">Welcome</h1>
+          <div className="container mx-auto px-4">
+            <h1 className="mb-3 text-4xl font-bold md:text-5xl">Discover unique stores</h1>
+            <p className="mx-auto max-w-2xl text-lg text-white/90">Browse independent shops from creators and small businesses.</p>
+          </div>
         </section>
-        {categories.map((cat) => {
-          const items = products.filter((p) => p.categoryId === cat.id);
-          if (!items.length) return null;
-          return (
-            <section key={cat.id} className="container mx-auto px-4 py-8">
-              <h2 className="mb-4 text-xl font-bold">{cat.name}</h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {items.map((p) => (
-                  <Card key={p.id} className="overflow-hidden">
-                    <Link href={"/store/" + p.id} className="block aspect-square bg-muted">
-                      {p.images[0] && <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />}
-                    </Link>
-                    <div className="p-3">
-                      <Link href={"/store/" + p.id} className="line-clamp-2 text-sm font-medium hover:text-primary">{p.name}</Link>
-                      <p className="mt-1 font-bold tabular-nums">{formatVND(p.price)}</p>
-                    </div>
+        <section className="container mx-auto px-4 py-12">
+          <h2 className="mb-6 text-2xl font-bold">All stores ({stores.length})</h2>
+          {loading ? (
+            <p className="text-muted-foreground">Loading stores...</p>
+          ) : stores.length === 0 ? (
+            <Card className="p-12 text-center">
+              <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+              <p className="text-muted-foreground">No stores yet. <Link href="/login" className="text-primary hover:underline">Be the first to open one</Link></p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {stores.map((s) => (
+                <Link key={s.id} href={`/store/${s.slug}`} className="group">
+                  <Card className="h-full p-6 transition-shadow hover:shadow-lg">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-vibrant text-white"><ShoppingBag className="h-6 w-6" /></div>
+                    <h3 className="mb-1 text-lg font-bold group-hover:text-primary">{s.name}</h3>
+                    {s.tagline && <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{s.tagline}</p>}
+                    <div className="mt-auto flex items-center text-sm text-primary">Visit store <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" /></div>
                   </Card>
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </StoreLayout>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </>
   );
 }
