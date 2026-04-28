@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { LayoutDashboard, Package, FileText, ShoppingCart, Tags, Store, Zap } from "lucide-react";
+import { LayoutDashboard, Package, FileText, ShoppingCart, Tags, Store, Zap, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -47,11 +47,22 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
       </nav>
-      <div className="border-t border-border p-4">
-        <div className="rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 p-3 ring-1 ring-primary/30">
-          <p className="text-xs font-semibold">Frontend Demo</p>
-          <p className="mt-1 text-[10px] text-muted-foreground">Data persists in localStorage</p>
-        </div>
+      <div className="border-t border-border p-3">
+        <a
+          href="/store"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 p-3 ring-1 ring-primary/20 transition-all hover:from-primary/20 hover:to-accent/20 hover:ring-primary/40"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-vibrant text-white">
+            <Store className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-semibold">Xem Store</p>
+            <p className="text-[10px] text-muted-foreground">Preview cho khách</p>
+          </div>
+          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+        </a>
       </div>
     </aside>
   );
