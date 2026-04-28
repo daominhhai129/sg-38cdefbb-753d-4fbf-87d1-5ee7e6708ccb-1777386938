@@ -84,37 +84,31 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((p) => (
               <Card key={p.id} className="group flex flex-col overflow-hidden transition-shadow hover:shadow-lg">
-                <div className="relative aspect-square overflow-hidden bg-muted">
+                <Link href={`/products/${p.id}`} className="relative block aspect-square overflow-hidden bg-muted">
                   {p.images?.[0] ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground">
                       <Package2 className="h-10 w-10" />
                     </div>
                   )}
-                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[p.status]}`}>
+                  <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-xs font-medium ${statusStyles[p.status]}`}>
                     {p.status.replace("_", " ")}
                   </span>
                   {p.videoUrl && (
-                    <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                    <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
                       <Video className="h-3 w-3" /> Video
                     </span>
                   )}
-                  {p.images && p.images.length > 1 && (
-                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
-                      +{p.images.length - 1}
-                    </span>
-                  )}
-                </div>
+                </Link>
                 <div className="flex flex-1 flex-col p-4">
                   <p className="mb-1 text-xs font-medium uppercase tracking-wide text-primary">{categoryName(p.categoryId)}</p>
-                  <h3 className="mb-1 line-clamp-1 font-semibold">{p.name}</h3>
-                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{stripHtml(p.description) || "—"}</p>
+                  <Link href={`/products/${p.id}`} className="mb-1 line-clamp-1 font-semibold hover:text-primary">{p.name}</Link>
+                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{stripHtml(p.description)}</p>
                   <div className="mt-auto flex items-end justify-between border-t border-border pt-3">
                     <div>
                       <p className="text-xs text-muted-foreground">Price</p>
-                      <p className="text-base font-bold tabular-nums">{formatVND(p.price)}</p>
+                      <p className="text-lg font-bold tabular-nums">{formatVND(p.price)}</p>
                     </div>
                     <div className="flex gap-1">
                       <Button asChild variant="ghost" size="icon" className="h-8 w-8">
